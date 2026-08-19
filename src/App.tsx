@@ -1,25 +1,46 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import Onboarding from './pages/Onboarding';
+import { useEffect, useState } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
-import { leerCertificaciones, leerPerfil } from './lib/storage';
+import Onboarding from './pages/Onboarding';
+import { getPerfil } from './services/perfil.service';
+import type { FormValues } from './lib/types';
 
-function RutaDashboard() {
-  const perfil = leerPerfil();
-  if (!perfil) return <Navigate to="/onboarding" replace />;
-  return <Dashboard perfil={perfil} certificacionesIniciales={leerCertificaciones()} />;
-}
+type EstadoPerfil = { fase: 'cargando' } | { fase: 'listo'; perfil: FormValues | null };
 
-function RutaInicio() {
-  const perfil = leerPerfil();
-  return <Navigate to={perfil ? '/dashboard' : '/onboarding'} replace />;
+function usePerfil() {
+  const location = useLocation();
+  const [estado, setEstado] = useState<EstadoPerfil>({ fase: 'cargando' });
+
+  useEffect(() => {
+    let activo = true;
+    setEstado({ fase: 'cargando' });
+    getPerfil()
+      .then((perfil) => {
+        if (activo) setEstado({ fase: 'listo', perfil });
+      })
+      .catch(() => {
+        if (activo) setEstado({ fase: 'listo', perfil: null });
+      });
+    return () => {
+      activo = false;
+    };
+  }, [location.pathname]); // refetch al navegar: Onboarding guardó → /dashboard ya ve el perfil
+
+  return estado;
 }
 
 export default function App() {
+  const { fase, perfil } = usePerfil();
+  if (fase === 'cargando') return <div className="app-cargando">Cargando…</div>;
+
   return (
     <Routes>
-      <Route path="/" element={<RutaInicio />} />
+      <Route path="/" element={<Navigate to={perfil ? '/dashboard' : '/onboarding'} replace />} />
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/dashboard" element={<RutaDashboard />} />
+      <Route
+        path="/dashboard"
+        element={perfil ? <Dashboard perfil={perfil} /> : <Navigate to="/onboarding" replace />}
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
