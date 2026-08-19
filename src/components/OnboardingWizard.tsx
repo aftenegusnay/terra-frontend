@@ -5,12 +5,18 @@ import DynamicField from './DynamicField';
 import './OnboardingWizard.css';
 
 export default function OnboardingWizard({
+  esEdicion = false,
+  valoresIniciales = {},
   onCompletar,
+  onCancelar,
 }: {
+  esEdicion?: boolean;
+  valoresIniciales?: FormValues;
   onCompletar: (valores: FormValues) => void;
+  onCancelar?: () => void;
 }) {
   const [pasoActual, setPasoActual] = useState(0);
-  const [valores, setValores] = useState<FormValues>({});
+  const [valores, setValores] = useState<FormValues>(valoresIniciales);
   const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante');
 
   const paso = ONBOARDING_STEPS[pasoActual];
@@ -98,6 +104,11 @@ export default function OnboardingWizard({
         >
           {esUltimoPaso ? 'Ir a mi panel' : 'Continuar'}
         </button>
+        {esEdicion && onCancelar && (
+          <button type="button" className="boton boton--linea onb__cancelar" onClick={onCancelar}>
+            Cancelar
+          </button>
+        )}
       </footer>
     </div>
   );
