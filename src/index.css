@@ -1,0 +1,133 @@
+:root {
+  --verde: #2f5d3a;
+  --verde-oscuro: #1e3d26;
+  --verde-tinta: #16281b;
+  --tierra: #6b4f2a;
+  --dorado: #d4a13c;
+  --dorado-suave: #e8c583;
+  --crema: #f7f3ea;
+  --crema-card: #efe6d3;
+  --crema-linea: #dfd3b6;
+  --satelite: #3e5c76;
+  --tinta: #1c1710;
+  --rojo: #a03a2c;
+
+  --font-display: 'Fraunces', 'Iowan Old Style', serif;
+  --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+
+  --radius: 4px;
+  --radius-lg: 10px;
+  --border-hairline: 1px solid var(--crema-linea);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+  color: var(--verde-tinta);
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--dorado);
+  outline-offset: 2px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tierra);
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 13px 26px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+  text-decoration: none;
+  background: none;
+}
+
+.boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.boton:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.boton--dorado {
+  background: var(--dorado);
+  color: var(--verde-tinta);
+}
+.boton--dorado:not(:disabled):hover {
+  background: var(--dorado-suave);
+}
+
+.boton--verde {
+  background: var(--verde-tinta);
+  color: var(--crema);
+}
+.boton--verde:not(:disabled):hover {
+  background: var(--verde-oscuro);
+}
+
+.boton--linea {
+  background: transparent;
+  border-color: var(--crema-linea);
+  color: var(--tinta);
+}
+.boton--linea:hover {
+  border-color: var(--tierra);
+}
+
+.boton--texto {
+  background: none;
+  color: var(--tierra);
+  padding: 13px 8px;
+}
+.boton--texto:hover {
+  color: var(--verde-tinta);
+}

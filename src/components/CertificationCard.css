@@ -1,0 +1,130 @@
+.cert-card {
+  background: var(--crema);
+  border: var(--border-hairline);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.cert-card:hover {
+  box-shadow: 0 10px 26px rgba(28, 23, 16, 0.1);
+  transform: translateY(-1px);
+}
+
+.cert-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cert-card__folio {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--tierra);
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.cert-card__header h3 {
+  font-size: 1.08rem;
+}
+
+.cert-card__eliminar {
+  background: none;
+  border: none;
+  color: var(--crema-linea);
+  font-size: 0.85rem;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.cert-card__eliminar:hover {
+  color: var(--rojo);
+}
+
+.cert-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.cert-card__badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 4px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+
+.cert-card__badge--producto {
+  background: var(--crema-card);
+  color: var(--tierra);
+  text-transform: capitalize;
+}
+
+.estado--pendiente {
+  background: rgba(212, 161, 60, 0.18);
+  color: #8a651f;
+}
+.estado--revision {
+  background: rgba(62, 92, 118, 0.16);
+  color: var(--satelite);
+}
+.estado--aprobado {
+  background: rgba(47, 93, 58, 0.16);
+  color: var(--verde);
+}
+.estado--rechazado {
+  background: rgba(160, 58, 44, 0.14);
+  color: var(--rojo);
+}
+
+.cert-card__datos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 6px;
+}
+
+.cert-card__dato {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+  border-bottom: 1px dashed var(--crema-linea);
+  padding-bottom: 6px;
+}
+
+.cert-card__dato dt {
+  color: var(--tierra);
+  flex-shrink: 0;
+}
+
+.cert-card__dato dd {
+  margin: 0;
+  text-align: right;
+  color: var(--tinta);
+  font-weight: 500;
+}
+
+.cert-card__notas {
+  font-size: 0.8rem;
+  color: var(--tinta);
+  opacity: 0.78;
+  background: var(--crema-card);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-top: 6px;
+}
+
+.cert-card__footer {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  color: var(--crema-linea);
+}
