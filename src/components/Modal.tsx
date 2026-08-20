@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import './Modal.css';
 
 export default function Modal({
   titulo,
@@ -24,21 +23,26 @@ export default function Modal({
   }, [onCerrar]);
 
   return (
-    <div className="modal__fondo" onMouseDown={onCerrar}>
+    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-verde-tinta/55 p-10 px-4 backdrop-blur-[2px] animate-modal-fondo" onMouseDown={onCerrar}>
       <div
-        className="modal__panel"
+        className="w-full max-w-[560px] rounded-lg bg-crema shadow-[0_24px_60px_rgba(28,23,16,0.35)] animate-modal-panel"
         role="dialog"
         aria-modal="true"
         aria-label={titulo}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="modal__header">
-          <h2>{titulo}</h2>
-          <button type="button" className="modal__cerrar" onClick={onCerrar} aria-label="Cerrar">
+        <div className="flex items-center justify-between border-b border-crema-linea px-6 py-5">
+          <h2 className="text-[1.2rem]">{titulo}</h2>
+          <button
+            type="button"
+            className="p-1.5 text-base text-tierra hover:text-rojo"
+            onClick={onCerrar}
+            aria-label="Cerrar"
+          >
             ✕
           </button>
         </div>
-        <div className="modal__cuerpo">{children}</div>
+        <div className="max-h-[72vh] overflow-y-auto p-6">{children}</div>
       </div>
     </div>
   );

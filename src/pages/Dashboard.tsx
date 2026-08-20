@@ -4,6 +4,7 @@ import ProfileCard from '../components/ProfileCard';
 import CertificationCard from '../components/CertificationCard';
 import Modal from '../components/Modal';
 import DynamicForm from '../components/DynamicForm';
+import Button from '../components/ui/Button';
 import { EUDR_FIELDS } from '../config/eudrFields';
 import {
   crearCertificacion,
@@ -13,7 +14,6 @@ import {
 } from '../services/certificacion.service';
 import { descargarExportacion } from '../lib/storage'; // ÚNICA excepción del spec
 import type { FormValues } from '../lib/types';
-import './Dashboard.css';
 
 type EstadoCerts = { fase: 'cargando' } | { fase: 'error' } | { fase: 'listo'; items: Certificacion[] };
 
@@ -61,74 +61,66 @@ export default function Dashboard({ perfil }: { perfil: FormValues }) {
   }
 
   return (
-    <div className="dash">
-      <header className="dash__topbar">
-        <div className="contenedor dash__topbar-inner">
-          <span className="dash__marca">
-            TERRA <strong>LINK</strong>
+    <div className="min-h-screen bg-crema">
+      <header className="sticky top-0 z-20 border-b border-crema-linea bg-crema">
+        <div className="contenedor flex h-16 items-center justify-between">
+          <span className="font-display text-[1.1rem] text-verde-tinta">
+            TERRA <strong className="text-dorado">LINK</strong>
           </span>
-          <div className="dash__acciones">
-            <button type="button" className="boton boton--linea" onClick={descargarExportacion}>
+          <div className="flex items-center gap-2.5">
+            <Button type="button" variant="linea" onClick={descargarExportacion}>
               ⬇ Exportar JSON
-            </button>
-            <button
-              type="button"
-              className="boton boton--texto"
-              onClick={() => navigate('/onboarding')}
-            >
+            </Button>
+            <Button type="button" variant="texto" onClick={() => navigate('/onboarding')}>
               Editar perfil
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="contenedor dash__cuerpo">
+      <main className="contenedor grid items-start gap-8 pb-20 pt-8 lg:grid-cols-[280px_1fr]">
         <ProfileCard perfil={perfil} />
 
-        <section className="dash__certificaciones">
-          <div className="dash__certificaciones-header">
+        <section>
+          <div className="mb-[26px] flex flex-wrap items-end justify-between gap-4">
             <div>
-              <span className="eyebrow">Certificaciones EUDR</span>
-              <h1>Tus lotes en proceso de certificación</h1>
+              <span className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-tierra">
+                Certificaciones EUDR
+              </span>
+              <h1 className="mt-2 text-[clamp(1.3rem,2.4vw,1.7rem)]">
+                Tus lotes en proceso de certificación
+              </h1>
             </div>
-            <button
-              type="button"
-              className="boton boton--dorado"
-              onClick={() => setModalAbierto(true)}
-            >
+            <Button type="button" variant="dorado" onClick={() => setModalAbierto(true)}>
               + Nueva certificación
-            </button>
+            </Button>
           </div>
 
-          {estado.fase === 'cargando' && <div className="dash__cargando">Cargando…</div>}
+          {estado.fase === 'cargando' && (
+            <div className="animate-pulse py-16 text-center text-[0.95rem] text-tierra">
+              Cargando…
+            </div>
+          )}
 
           {estado.fase === 'error' && (
-            <div className="dash__error">
-              <p>No se pudieron cargar las certificaciones.</p>
-              <button
-                type="button"
-                className="boton boton--linea"
-                onClick={() => setIntento((i) => i + 1)}
-              >
+            <div className="flex flex-col items-center gap-4 rounded-lg border border-rojo/40 bg-crema-card px-6 py-10 text-center">
+              <p className="text-[0.95rem] text-tinta">No se pudieron cargar las certificaciones.</p>
+              <Button type="button" variant="linea" onClick={() => setIntento((i) => i + 1)}>
                 Reintentar
-              </button>
+              </Button>
             </div>
           )}
 
           {estado.fase === 'listo' &&
             (estado.items.length === 0 ? (
-              <div className="dash__vacio">
+              <div className="flex flex-col items-center gap-4 rounded-lg border-[1.5px] border-dashed border-crema-linea px-6 py-12 text-center text-tierra">
                 <p>Todavía no registras ninguna certificación EUDR.</p>
-                <button
-                  type="button"
-                  className="boton boton--verde"
-                  onClick={() => setModalAbierto(true)}
-                >
+                <Button type="button" variant="verde" onClick={() => setModalAbierto(true)}>
                   Registrar la primera
-                </button>
+                </Button>
               </div>
             ) : (
-              <div className="dash__grid">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-[18px]">
                 {estado.items.map((c) => (
                   <CertificationCard key={c.id} certificacion={c} onEliminar={borrar} />
                 ))}

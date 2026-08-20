@@ -30,7 +30,12 @@ export default function Onboarding() {
     }
   }
 
-  if (perfilExistente === undefined) return <div className="onb-cargando">Cargando…</div>;
+  if (perfilExistente === undefined)
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-crema text-[0.95rem] text-tierra animate-pulse">
+        Cargando…
+      </div>
+    );
 
   return (
     <OnboardingWizard

@@ -1,7 +1,11 @@
-import { useMemo, useState } from 'react';
-import type { FieldDef, FieldValue, FormValues } from '../lib/types';
-import DynamicField from './DynamicField';
-import './DynamicForm.css';
+import { useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import type { FieldDef, FormValues } from '../lib/types';
+import { construirCamposSchema, schemaFromFields } from '../lib/schemas';
+import DynamicFieldControl from './DynamicFieldControl';
+import Button from './ui/Button';
 
 export default function DynamicForm({
   campos,
@@ -16,51 +20,39 @@ export default function DynamicForm({
   onEnviar: (valores: FormValues) => void;
   onCancelar?: () => void;
 }) {
-  const [valores, setValores] = useState<FormValues>(valoresIniciales);
-
-  const esValido = useMemo(
-    () =>
-      campos
-        .filter((c) => c.required)
-        .every((c) => {
-          const v = valores[c.id];
-          if (Array.isArray(v)) return v.length > 0;
-          return v !== undefined && v !== '' && v !== null;
-        }),
-    [campos, valores],
-  );
-
-  function actualizar(id: string, value: FieldValue) {
-    setValores((prev) => ({ ...prev, [id]: value }));
-  }
+  const shape = useMemo(() => construirCamposSchema(campos), [campos]);
+  const schema = useMemo(() => schemaFromFields(shape), [shape]);
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: objetoDefault(campos, valoresIniciales),
+    mode: 'onChange', // isValid reactivo → disabled del submit (replica esValido con validación real)
+  });
 
   return (
-    <form
-      className="dyn-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (esValido) onEnviar(valores);
-      }}
-    >
+    <form onSubmit={handleSubmit((values) => onEnviar(values as FormValues))}>
       {campos.map((campo) => (
-        <DynamicField
-          key={campo.id}
-          field={campo}
-          value={valores[campo.id]}
-          onChange={(v) => actualizar(campo.id, v)}
-        />
+        <DynamicFieldControl key={campo.id} field={campo} name={campo.id} control={control} />
       ))}
-
-      <div className="dyn-form__acciones">
+      <div className="mt-2 flex justify-end gap-3 border-t border-crema-linea pt-[18px]">
         {onCancelar && (
-          <button type="button" className="boton boton--linea" onClick={onCancelar}>
+          <Button type="button" variant="linea" onClick={onCancelar}>
             Cancelar
-          </button>
+          </Button>
         )}
-        <button type="submit" className="boton boton--verde" disabled={!esValido}>
+        <Button type="submit" variant="verde" disabled={!isValid}>
           {textoEnviar}
-        </button>
+        </Button>
       </div>
     </form>
   );
+}
+
+function objetoDefault(campos: FieldDef[], iniciales: FormValues): Record<string, unknown> {
+  const valores: Record<string, unknown> = {};
+  for (const c of campos) valores[c.id] = iniciales[c.id];
+  return valores;
 }

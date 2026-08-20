@@ -30,8 +30,14 @@ function usePerfil() {
 }
 
 export default function App() {
-  const { fase, perfil } = usePerfil();
-  if (fase === 'cargando') return <div className="app-cargando">Cargando…</div>;
+  const estado = usePerfil();
+  if (estado.fase === 'cargando')
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-crema text-[0.95rem] text-tierra animate-pulse">
+        Cargando…
+      </div>
+    );
+  const { perfil } = estado;
 
   return (
     <Routes>
