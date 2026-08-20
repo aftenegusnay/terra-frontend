@@ -1,4 +1,5 @@
 import type { FieldDef } from '../lib/types';
+import { PATRON_GPS } from '../lib/schemas';
 
 /**
  * Campos del formulario de "Nueva certificación EUDR" en el dashboard.
@@ -43,6 +44,7 @@ export const EUDR_FIELDS: FieldDef[] = [
     type: 'text',
     placeholder: 'Ej. 0.180 S, 78.467 W',
     required: true,
+    pattern: PATRON_GPS,
     helpText: 'Geolocalización exigida por la Regulación EUDR para trazabilidad.',
   },
   {

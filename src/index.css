@@ -1,133 +1,157 @@
-:root {
-  --verde: #2f5d3a;
-  --verde-oscuro: #1e3d26;
-  --verde-tinta: #16281b;
-  --tierra: #6b4f2a;
-  --dorado: #d4a13c;
-  --dorado-suave: #e8c583;
-  --crema: #f7f3ea;
-  --crema-card: #efe6d3;
-  --crema-linea: #dfd3b6;
-  --satelite: #3e5c76;
-  --tinta: #1c1710;
-  --rojo: #a03a2c;
+@import "tailwindcss";
 
+/* ==========================================================================
+   Design system TERRA LINK → tokens de Tailwind CSS v4 (@theme)
+   Los 12 colores, 3 familias tipográficas, radios, hairlines y animaciones
+   del :root legacy se redefinen aquí para generar utilities.
+   ========================================================================== */
+@theme {
+  /* Paleta — 12 colores HEX idénticos al :root legacy */
+  --color-verde: #2f5d3a;
+  --color-verde-oscuro: #1e3d26;
+  --color-verde-tinta: #16281b;
+  --color-tierra: #6b4f2a;
+  --color-dorado: #d4a13c;
+  --color-dorado-suave: #e8c583;
+  --color-crema: #f7f3ea;
+  --color-crema-card: #efe6d3;
+  --color-crema-linea: #dfd3b6;
+  --color-satelite: #3e5c76;
+  --color-tinta: #1c1710;
+  --color-rojo: #a03a2c;
+
+  /* Tipografía — el <link> de Google Fonts en index.html NO se toca */
   --font-display: 'Fraunces', 'Iowan Old Style', serif;
   --font-body: 'IBM Plex Sans', -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', monospace;
+  /* Fallback: --font-sans apunta a la familia del body */
+  --font-sans: var(--font-body);
 
+  /* Radios del design system.
+     OJO: v4 define --radius-lg: 0.5rem por defecto; este override lo fija
+     en 10px (decisión documentada en el design). */
   --radius: 4px;
   --radius-lg: 10px;
-  --border-hairline: 1px solid var(--crema-linea);
+
+  /* Hairline (D6): default de borde 1px sólido crema-linea.
+     NOTA: --default-border-color no es consumido por la utility `border` en
+     tailwindcss 4.3.x (el color default es currentColor); los elementos que
+     necesitan la hairline usan `border-crema-linea` explícito en el mapeo. */
+  --default-border-width: 1px;
+  --default-border-color: var(--color-crema-linea);
+
+  /* Breakpoint del grid del dashboard: 860px = lg (decisión 1 del design) */
+  --breakpoint-lg: 53.75rem;
+
+  /* Animaciones — los @keyframes van DENTRO de @theme (requisito v4 para
+     generar las utilities animate-entrar / animate-entrar-atras /
+     animate-modal-fondo / animate-modal-panel). */
+  --animate-entrar: entrar 0.4s ease;
+  --animate-entrar-atras: entrar-atras 0.4s ease;
+  --animate-modal-fondo: modal-fondo-in 0.15s ease;
+  --animate-modal-panel: modal-panel-in 0.2s ease;
+
+  @keyframes entrar {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes entrar-atras {
+    from {
+      opacity: 0;
+      transform: translateY(-14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes modal-fondo-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-crema);
+    color: var(--color-tinta);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El preflight de v4 des-estiliza los headings (font-size/font-weight
+     inherit); esta regla restaura la identidad del design system: Fraunces
+     600, verde-tinta, tracking -0.01em, sin margen. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-verde-tinta);
+    letter-spacing: -0.01em;
+  }
+
+  /* El preflight de v4 deja el cursor por defecto en los botones */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Foco visible accesible: outline 2px dorado, offset 2px — se aplica a
+     botones, inputs, selects, textareas y tarjetas de opción (fix #5:
+     nunca outline:none silencioso). */
+  :focus-visible {
+    outline: 2px solid var(--color-dorado);
+    outline-offset: 2px;
+  }
+
+  /* prefers-reduced-motion GLOBAL (fix #6): antes solo aplicaba al wizard;
+     ahora cubre toda la app (modal, tarjetas, wizard, dashboard). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-body {
-  margin: 0;
-  background: var(--crema);
-  color: var(--tinta);
-  font-family: var(--font-body);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  margin: 0;
-  color: var(--verde-tinta);
-  letter-spacing: -0.01em;
-}
-
-p {
-  margin: 0;
-}
-
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-:focus-visible {
-  outline: 2px solid var(--dorado);
-  outline-offset: 2px;
-}
-
-.eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--tierra);
-}
-
-.boton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 13px 26px;
-  border-radius: 3px;
-  border: 1px solid transparent;
-  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
-  text-decoration: none;
-  background: none;
-}
-
-.boton:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.boton:not(:disabled):hover {
-  transform: translateY(-1px);
-}
-
-.boton--dorado {
-  background: var(--dorado);
-  color: var(--verde-tinta);
-}
-.boton--dorado:not(:disabled):hover {
-  background: var(--dorado-suave);
-}
-
-.boton--verde {
-  background: var(--verde-tinta);
-  color: var(--crema);
-}
-.boton--verde:not(:disabled):hover {
-  background: var(--verde-oscuro);
-}
-
-.boton--linea {
-  background: transparent;
-  border-color: var(--crema-linea);
-  color: var(--tinta);
-}
-.boton--linea:hover {
-  border-color: var(--tierra);
-}
-
-.boton--texto {
-  background: none;
-  color: var(--tierra);
-  padding: 13px 8px;
-}
-.boton--texto:hover {
-  color: var(--verde-tinta);
+/* Fix bug #1: .contenedor se usaba en Dashboard.tsx:66,85 sin definición
+   (max-width nunca aplicaba). Se define como utility top-level: centra el
+   contenido con max-width 72rem y padding fluido clamp(20px, 5vw, 48px). */
+@utility contenedor {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 72rem;
+  padding-inline: clamp(20px, 5vw, 48px);
 }
