@@ -8,10 +8,22 @@ export interface Certificacion extends FormValues {
   creadaEn: string;
 }
 
+/** Genera un id único con fallback manual si crypto.randomUUID no está disponible (contexto HTTP/LAN). */
+export function generarId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /** Lee el perfil de onboarding guardado, o null si el usuario no lo completó. */
 export function leerPerfil(): FormValues | null {
-  const raw = localStorage.getItem(CLAVE_PERFIL);
-  return raw ? (JSON.parse(raw) as FormValues) : null;
+  try {
+    const raw = localStorage.getItem(CLAVE_PERFIL);
+    return raw ? (JSON.parse(raw) as FormValues) : null;
+  } catch {
+    return null; // JSON corrupto no rompe la app
+  }
 }
 
 export function guardarPerfil(valores: FormValues): void {
@@ -19,8 +31,12 @@ export function guardarPerfil(valores: FormValues): void {
 }
 
 export function leerCertificaciones(): Certificacion[] {
-  const raw = localStorage.getItem(CLAVE_CERTIFICACIONES);
-  return raw ? (JSON.parse(raw) as Certificacion[]) : [];
+  try {
+    const raw = localStorage.getItem(CLAVE_CERTIFICACIONES);
+    return raw ? (JSON.parse(raw) as Certificacion[]) : [];
+  } catch {
+    return [];
+  }
 }
 
 export function guardarCertificaciones(items: Certificacion[]): void {
@@ -30,7 +46,7 @@ export function guardarCertificaciones(items: Certificacion[]): void {
 export function agregarCertificacion(valores: FormValues): Certificacion {
   const nueva: Certificacion = {
     ...valores,
-    id: crypto.randomUUID(),
+    id: generarId(),
     creadaEn: new Date().toISOString(),
   };
   const actuales = leerCertificaciones();

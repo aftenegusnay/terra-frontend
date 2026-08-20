@@ -36,6 +36,10 @@ export interface FieldDef {
   /** Para type: 'number' */
   min?: number;
   max?: number;
+  /** Expresión regular de validación para campos de texto (vía Zod 4). */
+  pattern?: RegExp;
+  /** Mensaje de error personalizado para el patrón (default: 'Formato inválido'). */
+  mensajeError?: string;
 }
 
 export interface OnboardingStep {

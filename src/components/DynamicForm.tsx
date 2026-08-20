@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import type { FieldDef, FieldValue, FormValues } from '../lib/types';
-import DynamicField from './DynamicField';
-import './DynamicForm.css';
+import { useFormularioDinamico } from '../hooks/useFormularioDinamico';
+import type { FieldDef, FormValues } from '../lib/types';
+import DynamicFieldControl from './DynamicFieldControl';
+import Button from './ui/Button';
 
 export default function DynamicForm({
   campos,
@@ -16,50 +16,23 @@ export default function DynamicForm({
   onEnviar: (valores: FormValues) => void;
   onCancelar?: () => void;
 }) {
-  const [valores, setValores] = useState<FormValues>(valoresIniciales);
-
-  const esValido = useMemo(
-    () =>
-      campos
-        .filter((c) => c.required)
-        .every((c) => {
-          const v = valores[c.id];
-          if (Array.isArray(v)) return v.length > 0;
-          return v !== undefined && v !== '' && v !== null;
-        }),
-    [campos, valores],
-  );
-
-  function actualizar(id: string, value: FieldValue) {
-    setValores((prev) => ({ ...prev, [id]: value }));
-  }
+  // Thin container: schema + validación viven en useFormularioDinamico (REQ-LIMPIO).
+  const { control, isValid, enviar } = useFormularioDinamico(campos, valoresIniciales);
 
   return (
-    <form
-      className="dyn-form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (esValido) onEnviar(valores);
-      }}
-    >
+    <form onSubmit={enviar(onEnviar)}>
       {campos.map((campo) => (
-        <DynamicField
-          key={campo.id}
-          field={campo}
-          value={valores[campo.id]}
-          onChange={(v) => actualizar(campo.id, v)}
-        />
+        <DynamicFieldControl key={campo.id} field={campo} name={campo.id} control={control} />
       ))}
-
-      <div className="dyn-form__acciones">
+      <div className="mt-2 flex justify-end gap-3 border-t border-crema-linea pt-[18px]">
         {onCancelar && (
-          <button type="button" className="boton boton--linea" onClick={onCancelar}>
+          <Button type="button" variant="linea" onClick={onCancelar}>
             Cancelar
-          </button>
+          </Button>
         )}
-        <button type="submit" className="boton boton--verde" disabled={!esValido}>
+        <Button type="submit" variant="verde" disabled={!isValid}>
           {textoEnviar}
-        </button>
+        </Button>
       </div>
     </form>
   );
