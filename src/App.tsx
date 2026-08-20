@@ -1,48 +1,26 @@
-import { useEffect, useState } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Onboarding from './pages/Onboarding';
-import { getPerfil } from './services/perfil.service';
-import type { FormValues } from './lib/types';
-
-type EstadoPerfil = { fase: 'cargando' } | { fase: 'listo'; perfil: FormValues | null };
-
-function usePerfil() {
-  const location = useLocation();
-  const [estado, setEstado] = useState<EstadoPerfil>({ fase: 'cargando' });
-
-  useEffect(() => {
-    let activo = true;
-    setEstado({ fase: 'cargando' });
-    getPerfil()
-      .then((perfil) => {
-        if (activo) setEstado({ fase: 'listo', perfil });
-      })
-      .catch(() => {
-        if (activo) setEstado({ fase: 'listo', perfil: null });
-      });
-    return () => {
-      activo = false;
-    };
-  }, [location.pathname]); // refetch al navegar: Onboarding guardó → /dashboard ya ve el perfil
-
-  return estado;
-}
+import { usePerfil } from './hooks/usePerfil';
 
 export default function App() {
-  const estado = usePerfil();
-  if (estado.fase === 'cargando')
+  // D1: App posee usePerfil; Onboarding recibe props { perfil, error, onGuardado }.
+  const { perfil, cargando, error, guardar } = usePerfil();
+
+  if (cargando)
     return (
       <div className="flex min-h-screen items-center justify-center bg-crema text-[0.95rem] text-tierra animate-pulse">
         Cargando…
       </div>
     );
-  const { perfil } = estado;
 
   return (
     <Routes>
       <Route path="/" element={<Navigate to={perfil ? '/dashboard' : '/onboarding'} replace />} />
-      <Route path="/onboarding" element={<Onboarding />} />
+      <Route
+        path="/onboarding"
+        element={<Onboarding perfil={perfil} error={error} onGuardado={guardar} />}
+      />
       <Route
         path="/dashboard"
         element={perfil ? <Dashboard perfil={perfil} /> : <Navigate to="/onboarding" replace />}

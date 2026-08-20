@@ -1,9 +1,5 @@
-import { useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useFormularioDinamico } from '../hooks/useFormularioDinamico';
 import type { FieldDef, FormValues } from '../lib/types';
-import { construirCamposSchema, schemaFromFields } from '../lib/schemas';
 import DynamicFieldControl from './DynamicFieldControl';
 import Button from './ui/Button';
 
@@ -20,20 +16,11 @@ export default function DynamicForm({
   onEnviar: (valores: FormValues) => void;
   onCancelar?: () => void;
 }) {
-  const shape = useMemo(() => construirCamposSchema(campos), [campos]);
-  const schema = useMemo(() => schemaFromFields(shape), [shape]);
-  const {
-    control,
-    handleSubmit,
-    formState: { isValid },
-  } = useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: objetoDefault(campos, valoresIniciales),
-    mode: 'onChange', // isValid reactivo → disabled del submit (replica esValido con validación real)
-  });
+  // Thin container: schema + validación viven en useFormularioDinamico (REQ-LIMPIO).
+  const { control, isValid, enviar } = useFormularioDinamico(campos, valoresIniciales);
 
   return (
-    <form onSubmit={handleSubmit((values) => onEnviar(values as FormValues))}>
+    <form onSubmit={enviar(onEnviar)}>
       {campos.map((campo) => (
         <DynamicFieldControl key={campo.id} field={campo} name={campo.id} control={control} />
       ))}
@@ -49,10 +36,4 @@ export default function DynamicForm({
       </div>
     </form>
   );
-}
-
-function objetoDefault(campos: FieldDef[], iniciales: FormValues): Record<string, unknown> {
-  const valores: Record<string, unknown> = {};
-  for (const c of campos) valores[c.id] = iniciales[c.id];
-  return valores;
 }

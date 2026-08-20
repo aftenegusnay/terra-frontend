@@ -1,10 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import type { Path } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { ONBOARDING_STEPS } from '../config/onboardingSteps';
-import { schemaFromSteps } from '../lib/schemas';
+import { useOnboardingWizard } from '../hooks/useOnboardingWizard';
 import type { FormValues } from '../lib/types';
 import DynamicFieldControl from './DynamicFieldControl';
 import Button from './ui/Button';
@@ -20,49 +15,23 @@ export default function OnboardingWizard({
   onCompletar: (valores: FormValues) => void;
   onCancelar?: () => void;
 }) {
-  const [pasoActual, setPasoActual] = useState(0);
-  const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante');
+  // Thin container: la máquina del wizard (schema, validación, pasos,
+  // heurística) vive en useOnboardingWizard (REQ-LIMPIO).
+  const {
+    control,
+    paso,
+    totalPasos,
+    progreso,
+    esUltimoPaso,
+    camposRequeridosCompletos,
+    siguiente,
+    anterior,
+    direccion,
+  } = useOnboardingWizard({ esEdicion, valoresIniciales, onCompletar });
 
-  const schema = useMemo(() => schemaFromSteps(ONBOARDING_STEPS), []);
-  const { control, trigger, watch } = useForm<z.input<typeof schema>, unknown, z.output<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: construirDefaultValues(valoresIniciales),
-    mode: 'onTouched',
-  });
-
-  const paso = ONBOARDING_STEPS[pasoActual];
-  const totalPasos = ONBOARDING_STEPS.length;
-  const progreso = ((pasoActual + 1) / totalPasos) * 100;
-  const valores = watch();
-
-  // Heurística by-step IDÉNTICA a hoy: required del paso no vacíos → Continuar habilitado.
-  const camposRequeridosCompletos = paso.campos
-    .filter((c) => c.required)
-    .every((c) => {
-      const v = valores[c.id];
-      if (Array.isArray(v)) return v.length > 0;
-      return v !== undefined && v !== '' && v !== null;
-    });
-
-  async function siguiente() {
-    const idsPaso = paso.campos.map((c) => c.id) as Path<z.input<typeof schema>>[];
-    const ok = await trigger(idsPaso, { shouldFocus: true }); // Promise<boolean>
-    if (!ok) return; // errores visibles; no avanza
-    if (pasoActual < totalPasos - 1) {
-      setDireccion('adelante');
-      setPasoActual((p) => p + 1);
-    } else {
-      onCompletar(valores as FormValues);
-    }
-  }
-
-  function anterior() {
-    if (pasoActual === 0) return;
-    setDireccion('atras');
-    setPasoActual((p) => p - 1);
-  }
-
-  const esUltimoPaso = pasoActual === totalPasos - 1;
+  // D13: la API del hook no expone el índice — se deriva aquí para el
+  // "N de M" y el disabled de Atrás (findIndex sobre el id del paso).
+  const pasoActual = ONBOARDING_STEPS.findIndex((p) => p.id === paso.id);
 
   return (
     <div className="flex min-h-screen flex-col bg-crema">
@@ -132,14 +101,4 @@ export default function OnboardingWizard({
       </footer>
     </div>
   );
-}
-
-function construirDefaultValues(iniciales: FormValues): Record<string, unknown> {
-  const valores: Record<string, unknown> = {};
-  for (const paso of ONBOARDING_STEPS) {
-    for (const c of paso.campos) {
-      valores[c.id] = iniciales[c.id];
-    }
-  }
-  return valores; // undefined para no-provistos → campos registrados con shouldUnregister:false
 }

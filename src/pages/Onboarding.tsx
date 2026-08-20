@@ -1,48 +1,45 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OnboardingWizard from '../components/OnboardingWizard';
-import { getPerfil, guardarPerfil } from '../services/perfil.service';
 import type { FormValues } from '../lib/types';
 
-export default function Onboarding() {
+export default function Onboarding({
+  perfil,
+  error,
+  onGuardado,
+}: {
+  perfil: FormValues | null;
+  error: boolean;
+  onGuardado: (valores: FormValues) => Promise<void>;
+}) {
   const navigate = useNavigate();
-  const [perfilExistente, setPerfilExistente] = useState<FormValues | null | undefined>(undefined);
-  const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => {
-    let activo = true;
-    getPerfil().then((perfil) => {
-      if (activo) setPerfilExistente(perfil);
-    });
-    return () => {
-      activo = false;
-    };
-  }, []);
 
   async function completar(valores: FormValues) {
-    if (guardando) return; // evita doble POST por doble click (OnboardingWizard no recibe disabled)
-    setGuardando(true);
     try {
-      await guardarPerfil(valores);
+      // onGuardado (usePerfil) rethrow en fallo (D4): el error se consume aquí →
+      // sin unhandled rejection (B4) y SIN navegación: el usuario permanece en el
+      // wizard con sus valores para reintentar (S4).
+      await onGuardado(valores);
       navigate('/dashboard', { replace: true });
-    } finally {
-      setGuardando(false);
+    } catch {
+      // B2/B4: el hook ya marcó error=true → el banner de abajo da feedback visible.
     }
   }
 
-  if (perfilExistente === undefined)
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-crema text-[0.95rem] text-tierra animate-pulse">
-        Cargando…
-      </div>
-    );
-
   return (
-    <OnboardingWizard
-      esEdicion={perfilExistente !== null}
-      valoresIniciales={perfilExistente ?? undefined}
-      onCompletar={completar}
-      onCancelar={() => navigate('/dashboard', { replace: true })}
-    />
+    <>
+      {error && (
+        <div className="flex justify-center bg-crema px-[clamp(20px,5vw,48px)] pt-4" role="alert">
+          <p className="w-full max-w-[560px] rounded-lg border border-rojo/40 bg-crema-card px-4 py-3 text-center text-[0.88rem] text-tinta">
+            No se pudo conectar con el servidor. Revisa tu conexión y vuelve a intentarlo.
+          </p>
+        </div>
+      )}
+      <OnboardingWizard
+        esEdicion={perfil !== null}
+        valoresIniciales={perfil ?? undefined}
+        onCompletar={completar}
+        onCancelar={() => navigate('/dashboard', { replace: true })}
+      />
+    </>
   );
 }

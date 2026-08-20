@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileCard from '../components/ProfileCard';
 import CertificationCard from '../components/CertificationCard';
@@ -6,58 +6,21 @@ import Modal from '../components/Modal';
 import DynamicForm from '../components/DynamicForm';
 import Button from '../components/ui/Button';
 import { EUDR_FIELDS } from '../config/eudrFields';
-import {
-  crearCertificacion,
-  eliminarCertificacion,
-  listarCertificaciones,
-  type Certificacion,
-} from '../services/certificacion.service';
+import { useCertificaciones } from '../hooks/useCertificaciones';
 import { descargarExportacion } from '../lib/storage'; // ÚNICA excepción del spec
 import type { FormValues } from '../lib/types';
 
-type EstadoCerts = { fase: 'cargando' } | { fase: 'error' } | { fase: 'listo'; items: Certificacion[] };
-
 export default function Dashboard({ perfil }: { perfil: FormValues }) {
   const navigate = useNavigate();
-  const [estado, setEstado] = useState<EstadoCerts>({ fase: 'cargando' });
+  const { estado, reintentar, crear, borrar } = useCertificaciones();
+  // EXCEPCIÓN del spec (REQ-LIMPIO): estado UI trivial del modal — glue.
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [creando, setCreando] = useState(false);
-  const [intento, setIntento] = useState(0); // re-trigger del efecto (botón reintentar)
 
-  useEffect(() => {
-    let activo = true;
-    setEstado({ fase: 'cargando' });
-    listarCertificaciones()
-      .then((items) => {
-        if (activo) setEstado({ fase: 'listo', items });
-      })
-      .catch(() => {
-        if (activo) setEstado({ fase: 'error' });
-      });
-    return () => {
-      activo = false;
-    };
-  }, [intento]);
-
-  async function crear(valores: FormValues) {
-    if (creando) return;
-    setCreando(true);
-    try {
-      const nueva = await crearCertificacion(valores);
-      setEstado((prev) => (prev.fase === 'listo' ? { ...prev, items: [nueva, ...prev.items] } : prev));
-      setModalAbierto(false);
-    } finally {
-      setCreando(false);
-    }
-  }
-
-  async function borrar(id: string) {
-    try {
-      const restantes = await eliminarCertificacion(id);
-      setEstado({ fase: 'listo', items: restantes });
-    } catch (error) {
-      console.error('No se pudo eliminar', error); // mantiene estado actual
-    }
+  async function manejarCrear(valores: FormValues) {
+    // D5 (S7/S8): el CIERRE del modal es glue del contenedor — el hook no
+    // posee estado UI. ok=false → modal permanece abierto.
+    const ok = await crear(valores);
+    if (ok) setModalAbierto(false);
   }
 
   return (
@@ -105,7 +68,7 @@ export default function Dashboard({ perfil }: { perfil: FormValues }) {
           {estado.fase === 'error' && (
             <div className="flex flex-col items-center gap-4 rounded-lg border border-rojo/40 bg-crema-card px-6 py-10 text-center">
               <p className="text-[0.95rem] text-tinta">No se pudieron cargar las certificaciones.</p>
-              <Button type="button" variant="linea" onClick={() => setIntento((i) => i + 1)}>
+              <Button type="button" variant="linea" onClick={reintentar}>
                 Reintentar
               </Button>
             </div>
@@ -134,7 +97,7 @@ export default function Dashboard({ perfil }: { perfil: FormValues }) {
           <DynamicForm
             campos={EUDR_FIELDS}
             textoEnviar="Guardar certificación"
-            onEnviar={crear}
+            onEnviar={manejarCrear}
             onCancelar={() => setModalAbierto(false)}
           />
         </Modal>
